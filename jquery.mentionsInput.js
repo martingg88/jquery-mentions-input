@@ -29,7 +29,7 @@
         templates     : {
             wrapper                    : _.template('<div class="mentions-input-box"></div>'),
             autocompleteList           : _.template('<div class="mentions-autocomplete-list"></div>'),
-            autocompleteListItem       : _.template('<li data-ref-id="<%= id %>" data-ref-type="<%= type %>" data-display="<%= display %>"><%= content %></li>'),
+            autocompleteListItem       : _.template('<li data-ref-id="<%= id %>" data-ref-type="<%= type %>" data-display="<%= display %>"><a href="javascript:void(0);"><div class="image-frame"></div><div class="details"><div class="name"><%= name %></div><div class="username"><%= username_alias %></div><div class="email"><%= email %></div></div></a></li>'),
             autocompleteListItemAvatar : _.template('<img src="<%= avatar %>" />'),
             autocompleteListItemIcon   : _.template('<div class="icon <%= icon %>"></div>'),
             mentionsOverlay            : _.template('<div class="mentions"><div></div></div>'),
@@ -419,7 +419,7 @@
             }
 
             elmAutocompleteList.empty(); //Remove all li elements in autocomplete list
-            var elmDropDownList = $("<ul>").appendTo(elmAutocompleteList).hide(); //Inserts a ul element to autocomplete div and hide it
+            var elmDropDownList = $('<ul class="dropdown-menu">').appendTo(elmAutocompleteList).hide(); //Inserts a ul element to autocomplete div and hide it
 
             _.each(results, function (item, index) {
                 var itemUid = _.uniqueId('mention_'); //Gets the item with unique id
@@ -430,7 +430,9 @@
                     'id'      : utils.htmlEncode(item.id),
                     'display' : utils.htmlEncode(item.name),
                     'type'    : utils.htmlEncode(item.type),
-                    'content' : utils.highlightTerm(utils.htmlEncode((item.display ? item.display : item.name)), query)
+                    'name': utils.highlightTerm(utils.htmlEncode(item.name), query),
+                    'username_alias': utils.highlightTerm(utils.htmlEncode(item.username_alias), query),
+                    'email': ''//utils.highlightTerm(utils.htmlEncode(item.email), query)
                 })).attr('data-uid', itemUid); //Inserts the new item to list
 
                 //If the index is 0
@@ -448,7 +450,7 @@
                     } else { //If not then we set an default icon
                         elmIcon = $(settings.templates.autocompleteListItemIcon({ icon : item.icon }));
                     }
-                    elmIcon.prependTo(elmListItem); //Inserts the elmIcon to elmListItem
+                    elmIcon.prependTo(elmListItem.find('.image-frame')); //Inserts the elmIcon to elmListItem
                 }
                 elmListItem = elmListItem.appendTo(elmDropDownList); //Insets the elmListItem to elmDropDownList
             });
@@ -506,7 +508,7 @@
             var regex = new RegExp("(" + settings.triggerChar + ")\\[(.*?)\\]\\((.*?):(.*?)\\)", "gi");
             var match, newMentionText = mentionText;
             while ((match = regex.exec(mentionText)) != null) {
-                newMentionText = newMentionText.replace(match[0], match[1] + match[2]);
+                newMentionText = newMentionText.replace(match[0], match[2]);
                 mentionsCollection.push({ 'id': match[4], 'type': match[3], 'value': match[2], 'trigger': match[1] });
             }
             elmInputBox.val(newMentionText);
